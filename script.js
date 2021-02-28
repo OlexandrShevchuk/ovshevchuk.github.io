@@ -1,77 +1,51 @@
-const classNames = {
-  TODO_ITEM: 'todo-container',
-  TODO_CHECKBOX: 'todo-checkbox',
-  TODO_TEXT: 'todo-text',
-  TODO_DELETE: 'todo-delete',
-}
+const Todo = props => (
+    <li>
+        <input type="checkbox"  checked={props.todo.check} onChange = {props.onChang}/>
+        <button onClick = {props.onDelete}>delete</button>
+        <span>{props.todo.text}</span>
+    </li>
+)
+let id=0;
+class App extends React.Component {
+    constructor(){
+        super();
+        this.state = {todos: [
+                     {id: 991, text: "task1", check: false}, 
+                     {id: 931, text: "task2", check: false}, 
+                     {id: 961, text: "task3", check: true}]
+                    };
+    }
+    addTODO(){
+        const text = prompt("Type your todo:");
+        this.setState({todos: [...this.state.todos, {id : id++, text: text, check: false}]});
+    }
 
-const list = document.getElementById('todo-list')
-const itemCountSpan = document.getElementById('item-count')
-const uncheckedCountSpan = document.getElementById('unchecked-count')
+    delete(id){
+        this.setState({
+            todos: this.state.todos.filter(todo => todo.id !== id)
+        })
+    }
 
-let todos = [];
-let id = todos.length;
+    changeTODO(id){
+        this.setState({todos: this.state.todos.map(todo => todo.id == id ? {...todo , check: !todo.check} : todo)})
+    }
+    render(){
+        return (
+            <div>
+               <h1>My TODO List</h1>
+               <div>TODO count: {this.state.todos.length}</div>
+               <div>Unchecked TODO count: {this.state.todos.filter(todo => !todo.check).length}</div>
+               <button onClick = {() => this.addTODO()}>Add todo</button>
+               <ul>
+                   {this.state.todos.map(todo => <Todo 
+                   onDelete = {() => this.delete(todo.id)} 
+                   onChang = {() => this.changeTODO(todo.id)} 
+                   todo={todo} />)}
+               </ul>
+            </div>
+        )
+    }
+    
+} 
 
-LoadTODO();
-class Todo{
-  constructor(){
-    this.id = id++;
-    this.text = this.getText();
-    this.check = false;
-  }
-  getText(){
-    return prompt('Enter a todo task: ');
-  }
-}
-if(todos.length !=0){
-  render();
-}
-
-
-function newTodo() {
-
-  const todo = new Todo();
-  todos.push(todo);
-  render();
-
-}
-function render(){
-  list.innerHTML='';
-  todos.map(renderTodo).forEach(todo => list.appendChild(todo))
-  itemCountSpan.textContent = todos.length;
-  uncheckedCountSpan.textContent = todos.filter(todo => !todo.check).length;
-  saveTODO();
-}
-function deleteTodo(id){
-  todos = todos.filter(todo => todo.id !== id)
-  render();
-}
-
-function renderTodo(todo){
-  const li = document.createElement('li');
-  li.innerHTML = `
-  <input type="checkbox" onchange="changeTodo(${todo.id})" ${todo.check == true ? "checked" : ""}>
-  <button onclick="deleteTodo(${todo.id})">delete</button>
-  <span class="todo-text">${todo.text}</span>
-  `
-  id=todos.length;
-  return li;
-}
-
-function changeTodo(id){
-  todos = todos.map(todo => todo.id == id ? {...todo, check: !todo.check} : todo);
-  uncheckedCountSpan.textContent = todos.filter(todo => !todo.check).length;
-  saveTODO();
-}
-
-function saveTODO(){
-  localStorage.clear();
-  localStorage.lastList = JSON.stringify(todos);
-}
-
-function LoadTODO(){
-  if(localStorage.length > 0){
-    todos = JSON.parse(localStorage.lastList);
-    render();
-  }
-}
+ReactDOM.render(<App />, document.getElementById("root"));
